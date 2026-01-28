@@ -81,12 +81,16 @@ NanoOWL runs real-time on Jetson Orin Nano.
 
     2. Install [torch2trt](https://github.com/NVIDIA-AI-IOT/torch2trt)
     3. Install NVIDIA TensorRT
-    4. Install the Transformers library
+       1. Download [TensorRT tar package](https://developer.nvidia.com/tensorrt/download) and extract to `Tensort-*`
+       2. Install python wheels in `Tensort-*/python`
+       3. Add `Tensort-*/lib` to LD_LIBRARY_PATH
+       4. Replace `args = ["/usr/src/tensorrt/bin/trtexec"]` in [owl_predictor.py](nanoowl/owl_predictor.py) with `args = [[path_to_Tensort-*/bin/trtexec]]`
+    5. Install the Transformers library
 
         ```bash
         python3 -m pip install transformers
         ```
-    5. (optional) Install NanoSAM (for the instance segmentation example)
+    6. (optional) Install NanoSAM (for the instance segmentation example)
 
 2. Install the NanoOWL package.
 
