@@ -144,6 +144,7 @@ class OwlPredictor(torch.nn.Module):
     
     def __init__(self,
             model_name: str = "google/owlvit-base-patch32",
+            model_path: str = "google/owlvit-base-patch32",
             device: str = "cuda",
             image_encoder_engine: Optional[str] = None,
             image_encoder_engine_max_batch_size: int = 1,
@@ -153,10 +154,10 @@ class OwlPredictor(torch.nn.Module):
         super().__init__()
 
         self.image_size = _owl_get_image_size(model_name)
-        self.device = device
-        self.model = OwlViTForObjectDetection.from_pretrained(model_name).to(self.device).eval()
-        self.processor = OwlViTProcessor.from_pretrained(model_name)
         self.patch_size = _owl_get_patch_size(model_name)
+        self.device = device
+        self.model = OwlViTForObjectDetection.from_pretrained(model_path).to(self.device).eval()
+        self.processor = OwlViTProcessor.from_pretrained(model_path)
         self.num_patches_per_side = self.image_size // self.patch_size
         self.box_bias = _owl_compute_box_bias(self.num_patches_per_side).to(self.device)
         self.num_patches = (self.num_patches_per_side)**2
@@ -254,7 +255,9 @@ class OwlPredictor(torch.nn.Module):
             mask = (mask_x & mask_y)
 
         # extract rois
-        roi_images = roi_align(image, [rois], output_size=self.get_image_size())
+        # roi_images is just align image to target input size, very slow operation
+        # roi_images = roi_align(image, [rois], output_size=self.get_image_size())
+        roi_images = image
 
         # mask rois
         if pad_square:
