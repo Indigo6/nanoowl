@@ -18,6 +18,10 @@ import argparse
 import PIL.Image
 import time
 import torch
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from nanoowl.owl_predictor import (
     OwlPredictor
 )
@@ -54,15 +58,17 @@ if __name__ == "__main__":
 
     predictor = OwlPredictor(
         args.model,
-        image_encoder_engine=args.image_encoder_engine
+        image_encoder_engine=args.image_encoder_engine,
+        device="cuda:0"
     )
 
     image = PIL.Image.open(args.image)
+    input_size = (predictor.image_size, predictor.image_size)
+    image_resized = image.resize(input_size, PIL.Image.Resampling.LANCZOS)
     
     text_encodings = predictor.encode_text(text)
-
     output = predictor.predict(
-        image=image, 
+        image=image_resized, 
         text=text, 
         text_encodings=text_encodings,
         threshold=thresholds,
@@ -74,7 +80,7 @@ if __name__ == "__main__":
         t0 = time.perf_counter_ns()
         for i in range(args.num_profiling_runs):
             output = predictor.predict(
-                image=image, 
+                image=image_resized, 
                 text=text, 
                 text_encodings=text_encodings,
                 threshold=thresholds,
@@ -83,8 +89,9 @@ if __name__ == "__main__":
         torch.cuda.current_stream().synchronize()
         t1 = time.perf_counter_ns()
         dt = (t1 - t0) / 1e9
+        print(f"PROFILING TIME per run: {dt/args.num_profiling_runs} seconds")
         print(f"PROFILING FPS: {args.num_profiling_runs/dt}")
 
-    image = draw_owl_output(image, output, text=text, draw_text=True)
+    image = draw_owl_output(image, input_size, output, text=text, draw_text=True)
 
     image.save(args.output)

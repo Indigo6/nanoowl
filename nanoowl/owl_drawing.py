@@ -33,10 +33,11 @@ def get_colors(count: int):
     return colors
 
 
-def draw_owl_output(image, output: OwlDecodeOutput, text: List[str], draw_text=True):
+def draw_owl_output(image, input_size, output: OwlDecodeOutput, text: List[str], draw_text=True):
     is_pil = not isinstance(image, np.ndarray)
     if is_pil:
         image = np.asarray(image)
+        image = image.copy()
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.75
     colors = get_colors(len(text))
@@ -45,7 +46,18 @@ def draw_owl_output(image, output: OwlDecodeOutput, text: List[str], draw_text=T
     for i in range(num_detections):
         box = output.boxes[i]
         label_index = int(output.labels[i])
+        score = output.scores[i]
         box = [int(x) for x in box]
+        # box is in input_size coordinates, rescale to image size
+        h, w = image.shape[:2]
+        scale_x = w / input_size[0]
+        scale_y = h / input_size[1]
+        box = [
+            int(box[0] * scale_x),
+            int(box[1] * scale_y),
+            int(box[2] * scale_x),
+            int(box[3] * scale_y)
+        ]
         pt0 = (box[0], box[1])
         pt1 = (box[2], box[3])
         cv2.rectangle(
@@ -58,7 +70,7 @@ def draw_owl_output(image, output: OwlDecodeOutput, text: List[str], draw_text=T
         if draw_text:
             offset_y = 12
             offset_x = 0
-            label_text = text[label_index]
+            label_text = text[label_index] + ": %.2f" % score
             cv2.putText(
                 image,
                 label_text,
