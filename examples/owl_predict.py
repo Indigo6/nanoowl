@@ -15,7 +15,7 @@
 
 
 import argparse
-import PIL.Image
+import cv2
 import time
 import torch
 
@@ -62,9 +62,10 @@ if __name__ == "__main__":
         device="cuda:0"
     )
 
-    image = PIL.Image.open(args.image)
+    image = cv2.imread(args.image)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     input_size = (predictor.image_size, predictor.image_size)
-    image_resized = image.resize(input_size, PIL.Image.Resampling.LANCZOS)
+    image_resized = cv2.resize(image, input_size)
     
     text_encodings = predictor.encode_text(text)
     output = predictor.predict(
@@ -92,6 +93,7 @@ if __name__ == "__main__":
         print(f"PROFILING TIME per run: {dt/args.num_profiling_runs} seconds")
         print(f"PROFILING FPS: {args.num_profiling_runs/dt}")
 
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     image = draw_owl_output(image, input_size, output, text=text, draw_text=True)
 
-    image.save(args.output)
+    cv2.imwrite(args.output, image)

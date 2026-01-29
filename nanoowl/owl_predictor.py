@@ -16,7 +16,6 @@
 
 import torch
 import numpy as np
-import PIL.Image
 import subprocess
 import tempfile
 import os
@@ -458,7 +457,7 @@ class OwlPredictor(torch.nn.Module):
         return self.load_image_encoder_engine(engine_path, max_batch_size)
 
     def predict(self, 
-            image: PIL.Image, 
+            image: np.array,
             text: List[str], 
             text_encodings: Optional[OwlEncodeTextOutput],
             threshold: Union[int, float, List[Union[int, float]]] = 0.1,
@@ -466,12 +465,12 @@ class OwlPredictor(torch.nn.Module):
             
         ) -> OwlDecodeOutput:
 
-        image_tensor = self.image_preprocessor.preprocess_pil_image(image)
+        image_tensor = self.image_preprocessor.preprocess_image(image)
 
         if text_encodings is None:
             text_encodings = self.encode_text(text)
 
-        rois = torch.tensor([[0, 0, image.width, image.height]], dtype=image_tensor.dtype, device=image_tensor.device)
+        rois = torch.tensor([[0, 0, image.shape[1], image.shape[0]]], dtype=image_tensor.dtype, device=image_tensor.device)
 
         image_encodings = self.encode_rois(image_tensor, rois, pad_square=pad_square)
 

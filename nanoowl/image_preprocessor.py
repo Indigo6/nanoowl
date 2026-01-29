@@ -15,7 +15,6 @@
 
 
 import torch
-import PIL.Image
 import numpy as np
 from typing import Tuple
 
@@ -67,8 +66,8 @@ class ImagePreprocessor(torch.nn.Module):
         return image
     
     @torch.no_grad()
-    def preprocess_pil_image(self, image: PIL.Image.Image):
-        image = torch.from_numpy(np.asarray(image))
+    def preprocess_image(self, image: np.array):
+        image = torch.from_numpy(image)
         image = image.permute(2, 0, 1)[None, ...]
         image = image.to(self.mean.device)
         image = image.type(self.mean.dtype)
