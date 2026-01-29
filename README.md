@@ -100,23 +100,27 @@ NanoOWL runs real-time on Jetson Orin Nano.
     python3 setup.py develop --user
     ```
 
-3. Build the TensorRT engine for the OWL-ViT vision encoder
+3. Download the [owlvit-base-patch32](https://www.modelscope.cn/models/google/owlvit-base-patch32/summary) safetensors
+
+4. Build the TensorRT engine for the OWL-ViT vision encoder
 
     ```bash
     mkdir -p data
     python3 -m nanoowl.build_image_encoder_engine \
-        data/owl_image_encoder_patch32.engine
+        data/owl_image_encoder_patch32.engine \
+        --model_path [path_to_owlvit-base-patch32]
     ```
     
 
-4. Run an example prediction to ensure everything is working
+5. Run an example prediction to ensure everything is working
 
     ```bash
     cd examples
     python3 owl_predict.py \
         --prompt="[an owl, a glove]" \
         --threshold=0.1 \
-        --image_encoder_engine=../data/owl_image_encoder_patch32.engine
+        --image_encoder_engine=../data/owl_image_encoder_patch32.engine \
+        --model_path [path_to_owlvit-base-patch32]
     ```
 
 That's it!  If everything is working properly, you should see a visualization saved to ``data/owl_predict_out.jpg``.  
