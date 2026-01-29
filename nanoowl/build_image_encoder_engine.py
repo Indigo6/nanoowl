@@ -23,12 +23,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("output_path", type=str)
     parser.add_argument("--model_name", type=str, default="google/owlvit-base-patch32")
+    parser.add_argument("--model_path", type=str, default="google/owlvit-base-patch32")
     parser.add_argument("--fp16_mode", type=bool, default=True)
     parser.add_argument("--onnx_opset", type=int, default=16)
     args = parser.parse_args()
     
     predictor = OwlPredictor(
-        model_name=args.model_name
+        model_name=args.model_name,
+        model_path=args.model_path
     )
 
     predictor.build_image_encoder_engine(
